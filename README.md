@@ -6,7 +6,7 @@ The scale and intention of this project will change with time, it began as a lea
 
 ## Concept 1 Notes: Basic Scene(Initial commit ID: [7a79f85](https://github.com/Craft485/3D/commit/7a79f85fe0dfbe9b6a256460fa55e5a56d2afd7e))
 
-Borrows heavily from [SimonDevs YouTube](https://www.youtube.com/channel/UCEwhtpXrg5MmwlH04ANpL8A) and [Github](https://github.com/simondevyoutube/ThreeJS_Tutorial_BasicWorld)
+Borrows heavily from [SimonDev's YouTube](https://www.youtube.com/channel/UCEwhtpXrg5MmwlH04ANpL8A) and [Github](https://github.com/simondevyoutube/ThreeJS_Tutorial_BasicWorld)
 
 Includes:
 
