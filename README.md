@@ -17,3 +17,13 @@ Includes:
 - Perspective camera with an orbit controller
 
 - Rendering an object or three into the scene
+
+## Concept 2 Notes: Character Controller(WIP)
+
+I'm taking most if not all of the math for movement/rotation from [an example](https://github.com/simondevyoutube/ThreeJS_Tutorial_CharacterController) because I have yet to really understand vectors and quaternions
+
+### General Overview
+
+To start with I didn't focus on models or animations, a cube will suffice
+
+Controller and input are taken care of in seperate classes in order to keep the logic decoupled

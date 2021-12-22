@@ -2,6 +2,8 @@ import * as THREE from 'https://cdn.jsdelivr.net/npm/three@0.118/build/three.mod
 
 import {OrbitControls} from 'https://cdn.jsdelivr.net/npm/three@0.118/examples/jsm/controls/OrbitControls.js';
 
+import { CharacterController, CharacterControllerInput } from './characterController.js'
+
 class WorldDemo {
     constructor() {
         this.init()
@@ -71,8 +73,8 @@ class WorldDemo {
             './assets/skybox/posz.jpg',
             './assets/skybox/negz.jpg'
         ])
-        // Skybox loading is toggled off for performance
-        // this.scene.background = texture
+        // Skybox loading can be toggled off for performance
+        this.scene.background = texture
 
         // Create, setup, and add a basic plane to the scene
         const plane = new THREE.Mesh(
@@ -84,17 +86,17 @@ class WorldDemo {
         plane.rotation.x = -Math.PI / 2
         this.scene.add(plane)
 
-        // Create, setup, and add a basic cube to the scene
-        const box = new THREE.Mesh(
+        // Create and setup a character mesh
+        this.character = new THREE.Mesh(
             new THREE.BoxGeometry(2, 2, 2),
             new THREE.MeshStandardMaterial({
-                color: 0xFFFFFF
+                color: 0x46b6e2
             })
         )
-        box.position.set(0, 1, 0)
-        box.castShadow = true
-        box.receiveShadow = true
-        this.scene.add(box)
+        // Set x, y, and z values for the Vector3 position of the mesh
+        this.character.position.set(0, 1, 0)
+        this.character.castShadow = true
+        this.character.receiveShadow = true
 
         // Add a few more boxes via looping
         for (let x = -8; x < 8; x++) {
@@ -111,19 +113,36 @@ class WorldDemo {
             }
         }
 
-        // Begin rendering via RequestAnimationFrame
+        this.previousRAF = null
+        this.loadModel()
+        // Begin rendering cycle via RequestAnimationFrame
         this.RAF()
     }
 
+    loadModel() {
+        this.controls = new CharacterController({ camera: this.camera, scene: this.scene }, this.character)
+    }
+
     RAF() {
-        requestAnimationFrame(() => {
+        requestAnimationFrame(t => {
+            if (this.previousRAF === null) this.previousRAF = t
+
             this.threejs.render(this.scene, this.camera)
             this.RAF()
+
+            this.step(t - this.previousRAF)
+            this.previousRAF = t
         })
+    }
+
+    step(timeElapsed) {
+        const timeElapsedInSeconds = timeElapsed * 0.001
+
+        if (this.controls) this.controls.update(timeElapsedInSeconds)
     }
 }
 
-let APP = null
+export let APP = null
 
 window.addEventListener('DOMContentLoaded', () => {
     APP = new WorldDemo()
