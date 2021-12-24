@@ -15,8 +15,6 @@ class CharacterControllerProxy {
 export class CharacterController {
     constructor(params) {
         this.params = params
-        // Legacy constructor param
-        // this.targetObject = target
         this.init()
     }
 
@@ -34,8 +32,6 @@ export class CharacterController {
     }
 
     loadModel() {
-        // In the future we could use this method to load in fbx models and animations
-        // this.params.scene.add(this.targetObject)
         const loader = new FBXLoader()
         loader.setPath('./assets/Timmy/')
         loader.load('model_timmy.fbx', fbx => {
@@ -331,7 +327,7 @@ class WalkState extends BaseState {
 
     exit() {}
 
-    update(timeElapsed, input) {
+    update(_, input) {
         if (input.keys.forward || input.keys.backward) {
             if (input.keys.shift) {
                 this.parent.setState('run')
@@ -379,7 +375,7 @@ class WalkBackwardState extends BaseState {
 
     exit() {}
 
-    update(timeElapsed, input) {
+    update(_, input) {
         if (!input.keys.backward) {
             this.parent.setState('idle')
         } else if (input.keys.control) {
@@ -422,7 +418,7 @@ class RunState extends BaseState {
   
     exit() {}
 
-    update(timeElapsed, input) {
+    update(_, input) {
         if (input.keys.forward || input.keys.backward) {
             if (!input.keys.shift) {
                 this.parent.setState('walk')
@@ -546,7 +542,7 @@ class CrouchWalkState extends BaseState {
 
     exit() {}
 
-    update(timeElapsed, input) {
+    update(_, input) {
         // If we are no longer crouching return to appropriate state
         if (input.keys.forward || input.keys.backward) {
             if (!input.keys.control) {

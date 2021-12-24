@@ -86,33 +86,6 @@ class WorldDemo {
         plane.rotation.x = -Math.PI / 2
         this.scene.add(plane)
 
-        // Create and setup a character mesh
-        this.character = new THREE.Mesh(
-            new THREE.BoxGeometry(2, 2, 2),
-            new THREE.MeshStandardMaterial({
-                color: 0x46b6e2
-            })
-        )
-        // Set x, y, and z values for the Vector3 position of the mesh
-        this.character.position.set(0, 1, 0)
-        this.character.castShadow = true
-        this.character.receiveShadow = true
-
-        // Add a few more boxes via looping
-        // for (let x = -8; x < 8; x++) {
-        //     for (let y = -8; y < 8; y++) {
-        //       const box = new THREE.Mesh(
-        //         new THREE.BoxGeometry(2, 2, 2),
-        //         new THREE.MeshStandardMaterial({
-        //             color: 0x808080,
-        //         }));
-        //       box.position.set(Math.random() + x * 5, Math.random() * 4.0 + 2.0, Math.random() + y * 5);
-        //       box.castShadow = true;
-        //       box.receiveShadow = true;
-        //       this.scene.add(box);
-        //     }
-        // }
-
         this.mixers = []
         this.previousRAF = null
         this.loadModel()
