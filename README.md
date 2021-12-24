@@ -27,3 +27,25 @@ I'm taking most if not all of the math for movement/rotation from [an example](h
 To start with I didn't focus on models or animations, a cube will suffice
 
 Controller and input are taken care of in seperate classes in order to keep the logic decoupled
+
+### Concept 2 Part 2: Models and animations
+
+Using [Mixamo](https://www.mixamo.com) to get models and animations
+
+Animations:
+
+- Idle
+
+- Walk forwards
+
+- Walk backwards
+
+- Crouch while idle
+
+- Crouch while walking either forwards or backwards
+
+- Run forwards
+
+What I have currently is good for the purposes of what I wanted from it.
+In the future I may add more animations and/or play with blending them together to get cleaner animations.
+Blending would involve playing 2 animations at once via my current understanding, but that may overcomplicate the current structure of the FSM

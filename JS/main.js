@@ -55,8 +55,8 @@ class WorldDemo {
         light.shadow.camera.bottom = -100
         this.scene.add(light)
 
-        light = new THREE.AmbientLight(0x101010)
-        this.scene.add(light)
+        // light = new THREE.AmbientLight(0x101010)
+        // this.scene.add(light)
 
         // Create and setup a controller
         const controls = new OrbitControls(this.camera, this.threejs.domElement)
@@ -79,7 +79,7 @@ class WorldDemo {
         // Create, setup, and add a basic plane to the scene
         const plane = new THREE.Mesh(
             new THREE.PlaneGeometry(100, 100, 10, 10),
-            new THREE.MeshStandardMaterial({ color: 0xFFFFFF })
+            new THREE.MeshStandardMaterial({ color: 0x808080 })
         )
         plane.castShadow = false
         plane.receiveShadow = true
@@ -99,20 +99,21 @@ class WorldDemo {
         this.character.receiveShadow = true
 
         // Add a few more boxes via looping
-        for (let x = -8; x < 8; x++) {
-            for (let y = -8; y < 8; y++) {
-              const box = new THREE.Mesh(
-                new THREE.BoxGeometry(2, 2, 2),
-                new THREE.MeshStandardMaterial({
-                    color: 0x808080,
-                }));
-              box.position.set(Math.random() + x * 5, Math.random() * 4.0 + 2.0, Math.random() + y * 5);
-              box.castShadow = true;
-              box.receiveShadow = true;
-              this.scene.add(box);
-            }
-        }
+        // for (let x = -8; x < 8; x++) {
+        //     for (let y = -8; y < 8; y++) {
+        //       const box = new THREE.Mesh(
+        //         new THREE.BoxGeometry(2, 2, 2),
+        //         new THREE.MeshStandardMaterial({
+        //             color: 0x808080,
+        //         }));
+        //       box.position.set(Math.random() + x * 5, Math.random() * 4.0 + 2.0, Math.random() + y * 5);
+        //       box.castShadow = true;
+        //       box.receiveShadow = true;
+        //       this.scene.add(box);
+        //     }
+        // }
 
+        this.mixers = []
         this.previousRAF = null
         this.loadModel()
         // Begin rendering cycle via RequestAnimationFrame
@@ -120,16 +121,16 @@ class WorldDemo {
     }
 
     loadModel() {
-        this.controls = new CharacterController({ camera: this.camera, scene: this.scene }, this.character)
+        this.controls = new CharacterController({ camera: this.camera, scene: this.scene })
     }
 
     RAF() {
         requestAnimationFrame(t => {
             if (this.previousRAF === null) this.previousRAF = t
 
-            this.threejs.render(this.scene, this.camera)
             this.RAF()
-
+            
+            this.threejs.render(this.scene, this.camera)
             this.step(t - this.previousRAF)
             this.previousRAF = t
         })
@@ -138,6 +139,10 @@ class WorldDemo {
     step(timeElapsed) {
         const timeElapsedInSeconds = timeElapsed * 0.001
 
+        // Update animations
+        if (this.mixers) this.mixers.map(m => m.update(timeElapsedInSeconds))
+
+        // Update controls
         if (this.controls) this.controls.update(timeElapsedInSeconds)
     }
 }
@@ -147,3 +152,7 @@ export let APP = null
 window.addEventListener('DOMContentLoaded', () => {
     APP = new WorldDemo()
 })
+
+// This is to hopefully prevent some of the browser keyboard shortcuts from causing problems, dev tools can still be opened via chrome://inspect/#pages
+// It seems as though this doesn't prevent ctrl + w unfortunatly
+window.addEventListener('keydown', e => { if (!e.metaKey) e.preventDefault() })
