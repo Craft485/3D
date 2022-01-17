@@ -12,13 +12,11 @@ Includes:
 
 - Skybox
 
-  - Found this to hit performance pretty hard as we are rendering the same static images every time
-
 - Perspective camera with an orbit controller
 
 - Rendering an object or three into the scene
 
-## Concept 2 Notes: Character Controller(WIP)
+## Concept 2 Notes: Character Controller(Initial Commit ID: [3259635](https://github.com/Craft485/TimmysWorld/commit/3259635f6aefb55c2e848973b946cfcc4aa5349d))
 
 I'm taking most if not all of the math for movement/rotation from [an example](https://github.com/simondevyoutube/ThreeJS_Tutorial_CharacterController) because I have yet to really understand vectors and quaternions
 
@@ -48,7 +46,6 @@ Animations:
 
 What I have currently is good for the purposes of what I wanted from it.
 In the future I may add more animations and/or play with blending them together to get cleaner animations.
-Blending would involve playing 2 animations at once via my current understanding, but that may overcomplicate the current structure of the FSM
 
 ## Concept 3 Notes: Level loading
 
