@@ -4,12 +4,14 @@ import {OrbitControls} from 'https://cdn.jsdelivr.net/npm/three@0.118/examples/j
 
 import { CharacterController, CharacterControllerInput } from './characterController.js'
 
+import { levelLoader } from './level.js'
+
 class WorldDemo {
     constructor() {
         this.init()
     }
 
-    init() {
+    async init() {
         // Create and setup renderer
         this.threejs = new THREE.WebGLRenderer({
             antialias: true
@@ -37,27 +39,6 @@ class WorldDemo {
         // Create new scene
         this.scene = new THREE.Scene()
 
-        // Create, setup, and add a new light source
-        let light = new THREE.DirectionalLight(0xFFFFFF, 1.0)
-        light.position.set(20, 100, 10)
-        light.target.position.set(0, 0, 0)
-        light.castShadow = true
-        light.shadow.bias = -0.001
-        light.shadow.mapSize.width = 2048
-        light.shadow.mapSize.height = 2048
-        light.shadow.camera.near = 0.1
-        light.shadow.camera.far = 500.0
-        light.shadow.camera.near = 0.5
-        light.shadow.camera.far = 500.0
-        light.shadow.camera.left = 100
-        light.shadow.camera.right = -100
-        light.shadow.camera.top = 100
-        light.shadow.camera.bottom = -100
-        this.scene.add(light)
-
-        // light = new THREE.AmbientLight(0x101010)
-        // this.scene.add(light)
-
         // Create and setup a controller
         const controls = new OrbitControls(this.camera, this.threejs.domElement)
         controls.target.set(0, 20, 0)
@@ -76,21 +57,38 @@ class WorldDemo {
         // Skybox loading can be toggled off for performance
         this.scene.background = texture
 
-        // Create, setup, and add a basic plane to the scene
-        const plane = new THREE.Mesh(
-            new THREE.PlaneGeometry(100, 100, 10, 10),
-            new THREE.MeshStandardMaterial({ color: 0x808080 })
-        )
-        plane.castShadow = false
-        plane.receiveShadow = true
-        plane.rotation.x = -Math.PI / 2
-        this.scene.add(plane)
+        
+        // =======================================================================================================================
+        // This is being kept here in case I wish to switch from having it as a file to having it as as function on WorldDemo later
+        // In other words: THIS CODE IS NOT LEGACY
+        // =======================================================================================================================
+        // const ll = new THREE.ObjectLoader()
+        // await ll.load(
+        //     // Level data URL
+        //     `./levels/debug_leveldata.json`,
+        //     // onLoad callback
+        //     // This has to be an arrow function because of the behavior of "this"
+        //     (sceneData) => {
+        //         console.log(sceneData)
+        //         this.scene = sceneData
+        //     },
+        //     // onProgress callback
+        //     (xhr) => console.log( (xhr.loaded / xhr.total * 100) + '% loaded' ),
+        //     // onError callback
+        //     (err) => console.error( 'An error happened\n' + err )
+        // )
+            
+        // Load level data into scene
+        this.scene = await levelLoader('debug')
 
         this.mixers = []
         this.previousRAF = null
-        this.loadModel()
-        // Begin rendering cycle via RequestAnimationFrame
-        this.RAF()
+        // Give the levelLoader time to to its thing
+        setTimeout(() => {
+            this.loadModel()
+            // Begin rendering cycle via RequestAnimationFrame
+            this.RAF()
+        }, 1000)
     }
 
     loadModel() {
@@ -128,4 +126,4 @@ window.addEventListener('DOMContentLoaded', () => {
 
 // This is to hopefully prevent some of the browser keyboard shortcuts from causing problems, dev tools can still be opened via chrome://inspect/#pages
 // It seems as though this doesn't prevent ctrl + w unfortunatly
-window.addEventListener('keydown', e => { if (!e.metaKey) e.preventDefault() })
+// window.addEventListener('keydown', e => { if (!e.metaKey) e.preventDefault() })
