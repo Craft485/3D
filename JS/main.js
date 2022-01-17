@@ -43,20 +43,6 @@ class WorldDemo {
         const controls = new OrbitControls(this.camera, this.threejs.domElement)
         controls.target.set(0, 20, 0)
         controls.update()
-
-        // Setup and load in skybox
-        const loader = new THREE.CubeTextureLoader()
-        const texture = loader.load([
-            './assets/skybox/posx.jpg',
-            './assets/skybox/negx.jpg',
-            './assets/skybox/posy.jpg',
-            './assets/skybox/negy.jpg',
-            './assets/skybox/posz.jpg',
-            './assets/skybox/negz.jpg'
-        ])
-        // Skybox loading can be toggled off for performance
-        this.scene.background = texture
-
         
         // =======================================================================================================================
         // This is being kept here in case I wish to switch from having it as a file to having it as as function on WorldDemo later
@@ -80,6 +66,19 @@ class WorldDemo {
             
         // Load level data into scene
         this.scene = await levelLoader('debug')
+
+        // JSON isn't carrying over skybox it seems, so just setting it here for POC purposes, maybe create a dynamic way later
+        // Setup and load in skybox
+        const loader = new THREE.CubeTextureLoader()
+        const texture = loader.load([
+            './assets/skybox/posx.jpg',
+            './assets/skybox/negx.jpg',
+            './assets/skybox/posy.jpg',
+            './assets/skybox/negy.jpg',
+            './assets/skybox/posz.jpg',
+            './assets/skybox/negz.jpg'
+        ])
+        this.scene.background = texture
 
         this.mixers = []
         this.previousRAF = null
