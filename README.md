@@ -49,3 +49,9 @@ Animations:
 What I have currently is good for the purposes of what I wanted from it.
 In the future I may add more animations and/or play with blending them together to get cleaner animations.
 Blending would involve playing 2 animations at once via my current understanding, but that may overcomplicate the current structure of the FSM
+
+## Concept 3 Notes: Level loading
+
+Using a [threejs level editor](https://threejs.org/editor/) I can export a scene into a JSON file and load it in later.
+Loading in scene data uses the THREEJS [ObjectLoader](https://threejs.org/docs/index.html#api/en/loaders/ObjectLoader), while the loader uses an ES6 Promise I'm not sure its 100% needed, but all I'm looking for is a working project.
+Later on if need be I can switch the function from being in a seperate file to be as function on the WorldDemo class.
