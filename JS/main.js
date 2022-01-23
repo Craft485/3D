@@ -1,128 +1,121 @@
-import * as THREE from 'https://cdn.jsdelivr.net/npm/three@0.118/build/three.module.js';
-
-import {OrbitControls} from 'https://cdn.jsdelivr.net/npm/three@0.118/examples/jsm/controls/OrbitControls.js';
-
-import { CharacterController, CharacterControllerInput } from './characterController.js'
-
+import * as CANNON from './lib/cannon.js'
+import * as THREE from 'https://unpkg.com/three@0.122.0/build/three.module.js'
+import { OrbitControls } from 'https://cdn.jsdelivr.net/npm/three@0.118/examples/jsm/controls/OrbitControls.js';
 import { levelLoader } from './level.js'
 
-class WorldDemo {
-    constructor() {
-        this.init()
-    }
+/**
+ * Really basic example to show cannon.js integration
+ * with three.js.
+ * Each frame the cannon.js world is stepped forward and then
+ * the position and rotation data of the boody is copied
+ * over to the three.js scene.
+ */
 
-    async init() {
-        // Create and setup renderer
-        this.threejs = new THREE.WebGLRenderer({
-            antialias: true
-        })
-        this.threejs.shadowMap.enabled = true
-        this.threejs.shadowMap.type = THREE.PCFSoftShadowMap
-        this.threejs.setPixelRatio(window.devicePixelRatio)
-        this.threejs.setSize(window.innerWidth, window.innerHeight)
+// three.js variables
+let camera, scene, renderer
+let mesh
 
-        document.body.appendChild(this.threejs.domElement)
+// cannon.js variables
+let world
+let body
 
-        window.addEventListener('resize', () => {
-            this.onWindowResize()
-        }, false)
+await initThree()
+initCannon()
+animate()
 
-        // Camera creation and setup
-        const fov = 60
-        const aspect = 1920 / 1080
-        const near = 1.0
-        const far = 1000.0
-        this.camera = new THREE.PerspectiveCamera(fov, aspect, near, far)
-        // Set initial x, y, z coords of camera object
-        this.camera.position.set(75, 20, 0)
+async function initThree() {
+    // Camera
+    camera = new THREE.PerspectiveCamera(60, window.innerWidth / window.innerHeight, 1, 1000)
+    camera.position.y = 30
+    camera.position.z = 20
 
-        // Create new scene
-        this.scene = new THREE.Scene()
+    // Scene
+    scene = await levelLoader('debug')
 
-        // Create and setup a controller
-        const controls = new OrbitControls(this.camera, this.threejs.domElement)
-        controls.target.set(0, 20, 0)
-        controls.update()
-        
-        // =======================================================================================================================
-        // This is being kept here in case I wish to switch from having it as a file to having it as as function on WorldDemo later
-        // In other words: THIS CODE IS NOT LEGACY
-        // =======================================================================================================================
-        // const ll = new THREE.ObjectLoader()
-        // await ll.load(
-        //     // Level data URL
-        //     `./levels/debug_leveldata.json`,
-        //     // onLoad callback
-        //     // This has to be an arrow function because of the behavior of "this"
-        //     (sceneData) => {
-        //         console.log(sceneData)
-        //         this.scene = sceneData
-        //     },
-        //     // onProgress callback
-        //     (xhr) => console.log( (xhr.loaded / xhr.total * 100) + '% loaded' ),
-        //     // onError callback
-        //     (err) => console.error( 'An error happened\n' + err )
-        // )
-            
-        // Load level data into scene
-        this.scene = await levelLoader('debug')
+    // Renderer
+    renderer = new THREE.WebGLRenderer({ antialias: true })
+    renderer.setSize(window.innerWidth, window.innerHeight)
 
-        // JSON isn't carrying over skybox it seems, so just setting it here for POC purposes, maybe create a dynamic way later
-        // Setup and load in skybox
-        const loader = new THREE.CubeTextureLoader()
-        const texture = loader.load([
-            './assets/skybox/posx.jpg',
-            './assets/skybox/negx.jpg',
-            './assets/skybox/posy.jpg',
-            './assets/skybox/negy.jpg',
-            './assets/skybox/posz.jpg',
-            './assets/skybox/negz.jpg'
-        ])
-        this.scene.background = texture
+    document.body.appendChild(renderer.domElement)
 
-        this.mixers = []
-        this.previousRAF = null
-        // Give the levelLoader time to to its thing
-        setTimeout(() => {
-            this.loadModel()
-            // Begin rendering cycle via RequestAnimationFrame
-            this.RAF()
-        }, 1000)
-    }
+    window.addEventListener('resize', onWindowResize)
 
-    loadModel() {
-        this.controls = new CharacterController({ camera: this.camera, scene: this.scene })
-    }
+    const controls = new OrbitControls(camera, renderer.domElement)
+    controls.target.set(0, 20, 0)
+    controls.update()
 
-    RAF() {
-        requestAnimationFrame(t => {
-            if (this.previousRAF === null) this.previousRAF = t
+    // Box
+    // const geometry = new THREE.BoxBufferGeometry(2, 2, 2)
+    // const material = new THREE.MeshBasicMaterial({ color: 0xff0000, wireframe: true })
 
-            this.RAF()
-            
-            this.threejs.render(this.scene, this.camera)
-            this.step(t - this.previousRAF)
-            this.previousRAF = t
-        })
-    }
-
-    step(timeElapsed) {
-        const timeElapsedInSeconds = timeElapsed * 0.001
-
-        // Update animations
-        if (this.mixers) this.mixers.map(m => m.update(timeElapsedInSeconds))
-
-        // Update controls
-        if (this.controls) this.controls.update(timeElapsedInSeconds)
-    }
+    // mesh = new THREE.Mesh(geometry, material)
+    // scene.add(mesh)
 }
 
-export let APP = null
+function onWindowResize() {
+    camera.aspect = window.innerWidth / window.innerHeight
+    camera.updateProjectionMatrix()
+    renderer.setSize(window.innerWidth, window.innerHeight)
+}
 
-window.addEventListener('DOMContentLoaded', () => {
-    APP = new WorldDemo()
-})
+function initCannon() {
+    world = new CANNON.World()
+    world.gravity.y = -9.82 // Meters per second
+    console.log(scene)
+    /** @todo Maybe make this a function to minimize duplicate code */
+    scene.children.forEach((obj, i) => {
+        /** @todo Recurse through groups in the scene, ignoring them for now */
+        if (!obj.type.toUpperCase().includes('LIGHT') && !obj.type.toUpperCase().includes('GROUP')) {
+            // Convert THREEJS geometry names to CANNONJS
+            const g = obj.geometry.type.replace(/geometry|buffer/gi, '')
+            console.log(`Obj Index: ${i} | Parsed geometry name: ${g}`)
+            // Diving by 2 because we need "half extents"
+            const shape = new CANNON[g](new CANNON.Vec3(obj.scale.x / 2, obj.scale.y / 2, obj.scale.z / 2))
+            // Everything in CANNON uses SI units
+            // Should probably find a more realistic way of doing mass instead of literally everything having a mass of 1kg
+            const body = new CANNON.Body({ mass: 1 })
+            body.addShape(shape)
+            world.addBody(body)
+        } else if (obj.type.toUpperCase() === 'GROUP') {
+            // Add the children of a group as shapes to some group body
+            const groupBody = new CANNON.Body({ mass: 1 })
 
-// This is to hopefully prevent some of the browser keyboard shortcuts from causing problems, dev tools can still be opened via chrome://inspect/#pages
-// It seems as though this doesn't prevent ctrl + w unfortunatly
-// window.addEventListener('keydown', e => { if (!e.metaKey) e.preventDefault() })
+            obj.children.forEach((childObj, childIndex) => {
+                const g = childObj.geometry.type.replace(/geometry|buffer/gi, '')
+                console.log(`Child object of group. Group object index: ${i} | Child index: ${childIndex} | Parsed child geometry name: ${g}`)
+                const shape = new CANNON[g](new CANNON.Vec3(childObj.scale.x / 2, childObj.scale.y / 2, childObj.scale.z / 2))
+                groupBody.addShape(shape)
+            })
+
+            world.addBody(groupBody)
+        }
+    })
+
+    // Box
+    // const shape = new CANNON.Box(new CANNON.Vec3(1, 1, 1))
+    // body = new CANNON.Body({
+    //     mass: 1,
+    // })
+    // body.addShape(shape)
+    // body.angularVelocity.set(0, 10, 0)
+    // body.angularDamping = 0.5
+    // world.addBody(body)
+
+    console.log(world)
+}
+
+function animate() {
+    requestAnimationFrame(animate)
+
+    // Step the physics world
+    world.fixedStep()
+
+    /** @todo Loop through all objects in world and copy those positions to the objects in the THREEJS scene for rerendering */
+
+    // Copy coordinates from cannon.js to three.js
+    // mesh.position.copy(body.position)
+    // mesh.quaternion.copy(body.quaternion)
+
+    // Render three.js
+    renderer.render(scene, camera)
+}
