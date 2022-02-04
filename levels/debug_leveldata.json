@@ -118,8 +118,8 @@
 		{
 			"uuid": "9E791807-2631-4FF9-965F-411558CF6240",
 			"type": "MeshBasicMaterial",
-			"color": 2894378,
-			"reflectivity": 1,
+			"color": 3684408,
+			"reflectivity": 0.5,
 			"refractionRatio": 0.98,
 			"side": 2,
 			"depthFunc": 3,
@@ -407,7 +407,7 @@
 				"castShadow": true,
 				"receiveShadow": true,
 				"layers": 1,
-				"matrix": [15,0,0,0,0,14.98,0,0,0,0,14.98,0,-13.064646877029087,5.396267688133396,-28.55670483264207,1],
+				"matrix": [15,0,0,0,0,14.98,0,0,0,0,14.98,0,-13.064646877029087,5.65,-28.55670483264207,1],
 				"geometry": "F22C2590-6531-454B-81B0-A1DAFC72DFEF",
 				"material": "3F872310-2067-4BE4-9250-5B3F4E43797E"
 			},
