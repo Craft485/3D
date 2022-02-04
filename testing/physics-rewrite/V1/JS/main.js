@@ -13,7 +13,7 @@ import { levelLoader } from './level.js'
 
 // three.js variables
 let camera, scene, renderer
-const renderedMeshes = []
+let mesh
 
 // cannon.js variables
 let world
@@ -59,12 +59,13 @@ function onWindowResize() {
 }
 
 function initCannon() {
-    world = new CANNON.World({ gravity: new CANNON.Vec3(0, -10, 0) })
+    world = new CANNON.World()
+    world.gravity.y = -9.82 // Meters per second
     console.log(scene)
     /** @todo Maybe make this a function to minimize duplicate code */
     scene.children.forEach((obj, i) => {
+        /** @todo Recurse through groups in the scene, ignoring them for now */
         if (!obj.type.toUpperCase().includes('LIGHT') && !obj.type.toUpperCase().includes('GROUP')) {
-            console.log(obj)
             // Convert THREEJS geometry names to CANNONJS
             const g = obj.geometry.type.replace(/geometry|buffer/gi, '')
             console.log(`Obj Index: ${i} | Parsed geometry name: ${g}`)
@@ -72,29 +73,20 @@ function initCannon() {
             const shape = new CANNON[g](new CANNON.Vec3(obj.scale.x / 2, obj.scale.y / 2, obj.scale.z / 2))
             // Everything in CANNON uses SI units
             // Should probably find a more realistic way of doing mass instead of literally everything having a mass of 1kg
-            const m = i === 0 ? 0 : 1
-            const body = new CANNON.Body({ mass: m })
-            body.position = new CANNON.Vec3(obj.position.x, obj.position.y, obj.position.z)
-            body.quaternion = new CANNON.Quaternion(obj.quaternion._x, obj.quaternion._y, obj.quaternion._z, obj.quaternion._w)
-            // Used for relating whats happening in world to whats being rendered in scene
-            renderedMeshes.push(obj)
+            const body = new CANNON.Body({ mass: 1 })
             body.addShape(shape)
             world.addBody(body)
         } else if (obj.type.toUpperCase() === 'GROUP') {
-            console.log(obj)
             // Add the children of a group as shapes to some group body
             const groupBody = new CANNON.Body({ mass: 1 })
-            groupBody.position = new CANNON.Vec3(obj.position.x, obj.position.y, obj.position.z)
-            groupBody.quaternion = new CANNON.Quaternion(obj.quaternion._x, obj.quaternion._y, obj.quaternion._z, obj.quaternion._w)
+
             obj.children.forEach((childObj, childIndex) => {
                 const g = childObj.geometry.type.replace(/geometry|buffer/gi, '')
                 console.log(`Child object of group. Group object index: ${i} | Child index: ${childIndex} | Parsed child geometry name: ${g}`)
-                /** @type {CANNON.Shape} */
                 const shape = new CANNON[g](new CANNON.Vec3(childObj.scale.x / 2, childObj.scale.y / 2, childObj.scale.z / 2))
-                shape.quaternion
                 groupBody.addShape(shape)
             })
-            renderedMeshes.push(obj)
+
             world.addBody(groupBody)
         }
     })
@@ -116,15 +108,10 @@ function animate() {
     requestAnimationFrame(animate)
 
     // Step the physics world
-    // world.fixedStep()
+    world.fixedStep()
 
     /** @todo Loop through all objects in world and copy those positions to the objects in the THREEJS scene for rerendering */
-    
-    world.bodies.forEach( /** @param {CANNON.Body} body @param {Number} i*/ (body, i) => {
-        // const meshToUpdate = scene.children.find(mesh => mesh.type === 'Group' ? mesh.children.find(childMesh => childMesh.id === shape.id) : mesh.id === shape.id)
-        
-    })
-    
+
     // Copy coordinates from cannon.js to three.js
     // mesh.position.copy(body.position)
     // mesh.quaternion.copy(body.quaternion)
@@ -132,33 +119,3 @@ function animate() {
     // Render three.js
     renderer.render(scene, camera)
 }
-
-
-// world.bodies.forEach((body, i) => {
-//     body.shapes.forEach(/** @param {CANNON.Shape} shape */(shape, j) => {
-//         const meshToUpdate = scene.children.find(mesh => mesh.type === 'Group' ? mesh.children.find(childMesh => childMesh.id === shape.id) : mesh.id === shape.id)
-//         console.log(meshToUpdate)
-//         if (meshToUpdate) {
-//             meshToUpdate.position.copy(body.position)
-//             meshToUpdate.quaternion.copy(body.quaternion)
-//         }
-//     })
-// })
-
-// Debug
-setTimeout(() => {window.scene=scene;window.camera=camera;window.world=world;console.log(renderedMeshes);}, 5000)
-
-window.addEventListener('keydown', (e) => { // Also debug
-    if (e.key === "Enter") {
-        world.fixedStep()
-        world.bodies.forEach( /** @param {CANNON.Body} body @param {Number} i */ (body, i) => {
-            const renderedMesh = renderedMeshes[i]
-            console.log('============================')
-            console.log(body)
-            console.log(renderedMesh)
-            console.log('============================')
-            renderedMesh.position.copy(body.position)
-            renderedMesh.quaternion.copy(body.quaternion)
-        })
-    }
-})
